@@ -1,6 +1,9 @@
 import requests
 import sys
 import json
+from colorama import init
+from colorama import Fore, Back, Style
+init(autoreset=True)
 
 CONFIG_PATH = '../keys/stonkhonk.config'
 ALPHA_KEY = ""
@@ -19,11 +22,13 @@ class Stonk:
 		self.changePct = chgp
 	
 	def honk(self):
-		print("-----", self.symbol,"-----")	
+		print("|-----<", Fore.CYAN + self.symbol, ">-----")	
 		print("| Open:\t", self.openPrice)
-		print("| Price:", self.currPrice)
-		print("| Vol:\t", self.volume)
-		print("----- /HONK -----")
+		print("| Price: ", self.currPrice)
+		print("| Vol: \t", self.volume)
+		print("| Change:", self.change)
+		print("| % Chg: ",self.changePct)
+		print("-----<", Fore.CYAN + "/" + self.symbol, ">-----")
 
 
 def getCreds():
@@ -38,16 +43,22 @@ def getCreds():
 def getQuote(symbol,key):
 	url = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol='+symbol+'&apikey='+key
 	resp = requests.get(url)
+	if "Error" in resp.text:
+		# print(resp.status_code, resp.text)
+		sys.exit("Error, bad symbol:" + symbol)
 	qt = resp.json()
+	# print(qt)
 	return qt
 
 
 def getHonk(sym,key):
 	stk = getQuote(sym,key)
 	quote = stk['Global Quote']
-	print(quote)
+	# print(quote)
+	
 	stonk = Stonk(quote['01. symbol'], quote['02. open'], quote['03. high'], quote['04. low'], quote['05. price'], quote['06. volume'], quote['07. latest trading day'], quote['08. previous close'], quote['09. change'], quote['10. change percent'])
 	stonk.honk()
+
 
 def main():
 	print("HONK HONK")
@@ -71,7 +82,7 @@ def main():
 			getHonk(symbol,alphakey)			
 			
 		elif cmd == 'help':
-			print("HELP:")
+			print("HELP:\n")
 			print("\texit:\texit/ctrl-d")
 			
 			print("\thonk:\t")
