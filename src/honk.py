@@ -1,5 +1,6 @@
 import requests
 import sys
+import time
 import json
 from colorama import init
 from colorama import Fore, Back, Style
@@ -7,6 +8,7 @@ init(autoreset=True)
 
 CONFIG_PATH = '../keys/stonkhonk.config'
 ALPHA_KEY = ""
+WATCHLIST = ['amd', 'csco', 'tsla']
 
 class Stonk:
 	def __init__(self, symbol, op, high, low, cur, vol, ltd, pc, chg, chgp):
@@ -24,10 +26,21 @@ class Stonk:
 	def honk(self):
 		print("|-----<", Fore.CYAN + self.symbol, ">-----")	
 		print("| Open:\t", self.openPrice)
-		print("| Price: ", self.currPrice)
+		print("| Price:", self.currPrice)
 		print("| Vol: \t", self.volume)
-		print("| Change:", self.change)
-		print("| % Chg: ",self.changePct)
+		uarrow = u'\u2191'
+		darrow = u'\u2193'
+
+		if '-' in self.change:
+			print(Fore.RED + "| Change:" + self.change + "\t" + darrow)
+		else:
+			print(Fore.GREEN + "| Change:" + self.change + "\t" + uarrow)
+
+		if '-' in self.changePct:
+			print(Fore.RED + "| % Chg: " + self.changePct + "\t" + darrow)
+		else:
+			print(Fore.GREEN + "| % Chg: " + self.changePct + "\t" + uarrow)
+	
 		print("-----<", Fore.CYAN + "/" + self.symbol, ">-----")
 
 
@@ -60,6 +73,13 @@ def getHonk(sym,key):
 	stonk.honk()
 
 
+def chart(symbol, duration, key):
+	while duration > 0:
+		getHonk(symbol, key)
+		duration = duration - 1
+		time.sleep(12)
+
+
 def main():
 	print("HONK HONK")
 
@@ -80,7 +100,15 @@ def main():
 				break
 			symbol = cmds[1]
 			getHonk(symbol,alphakey)			
-			
+		
+		elif 'chart' in cmd:
+			cmds = cmd.split()
+			if len(cmds) < 3:
+				print("chart <symbol> <duration(min)>")
+				break
+			symbol = cmds[1]
+			duration = int(cmds[2])
+			chart(symbol, duration, alphakey)
 		elif cmd == 'help':
 			print("HELP:\n")
 			print("\texit:\texit/ctrl-d")
